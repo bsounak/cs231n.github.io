@@ -38,16 +38,19 @@ def softmax_loss_naive(W, X, y, reg):
     scores = np.matmul(X, W)  # shape: (N, C)
     for i in range(N):  # loop over each training sample in minibatch
         # loss
-        f = scores[i]
+        f = scores[i]  # shape: (C,)
         f -= np.max(f)
         p = np.exp(f) / np.sum(np.exp(f))  # normalized p for each class
         loss_i = -np.log(p[y[i]])
         loss += loss_i
 
         # gradient
+        # https://stackoverflow.com/questions/41663874/cs231n-how-to-calculate-gradient-for-softmax-loss-function/
         for j in range(C):  # loop over each class
-            dW[:, j] += X[i] * p[j]
-        dW[:, y[i]] -= X[i]
+            if j == y[i]:  # update the weights belonging to the correct class
+                dW[:, j] += (p[j] - 1) * X[i]
+            else:
+                dW[:, j] += p[j] * X[i]
 
     loss /= N
     dW /= N
@@ -79,7 +82,23 @@ def softmax_loss_vectorized(W, X, y, reg):
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    N = X.shape[0]  # number of training samples in minibatch
+    C = W.shape[1]  # number of classes
+    scores = np.matmul(X, W)  # shape: (N, C)
+    f = scores - np.max(scores, axis=1)[:, np.newaxis]  # subtract column-wise
+    # max value. shape: (N, C)
+    p = np.exp(f) / np.sum(np.exp(f), axis=1)[:, np.newaxis]  # shape: (N, C)
+    loss = np.sum(-np.log(p[np.arange(N), y]))  # float value
+
+    p[np.arange(N), y] -= 1
+    dW += np.matmul(np.transpose(X), p)
+
+    loss /= N
+    dW /= N
+
+    # regularization
+    loss += reg * np.sum(np.square(W))
+    dW += reg * 2 * W
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
