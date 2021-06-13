@@ -85,8 +85,7 @@ def softmax_loss_vectorized(W, X, y, reg):
     N = X.shape[0]  # number of training samples in minibatch
     C = W.shape[1]  # number of classes
     scores = np.matmul(X, W)  # shape: (N, C)
-    f = scores - np.max(scores, axis=1)[:, np.newaxis]  # subtract column-wise
-    # max value. shape: (N, C)
+    f = scores - np.max(scores, axis=1)[:, np.newaxis]  # shape: (N, C)
     p = np.exp(f) / np.sum(np.exp(f), axis=1)[:, np.newaxis]  # shape: (N, C)
     loss = np.sum(-np.log(p[np.arange(N), y]))  # float value
 
